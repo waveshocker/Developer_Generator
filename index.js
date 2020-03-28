@@ -1,6 +1,11 @@
 const fs = require("fs");
 const axios = require("axios");
 const inquirer = require("inquirer");
+const convertFactory = require('electron-html-to');
+
+var conversion = convertFactory({
+    converterPath: convertFactory.converters.PDF
+  });
 
 let data = {};
 
@@ -36,7 +41,18 @@ function init() {
                 data.bio = res.data.bio
                 
                 let resumeHTML = generateHTML(data);
-                console.log(resumeHTML)
+                //console.log(resumeHTML)
+
+                conversion({ html: resumeHTML }, function(err, result) {
+                    if (err) {
+                      return console.error(err);
+                    }
+                   
+                    console.log(result.numberOfPages);
+                    console.log(result.logs);
+                    result.stream.pipe(fs.createWriteStream('./resume.pdf'));
+                    conversion.kill(); 
+                  });
 
             })
     })
